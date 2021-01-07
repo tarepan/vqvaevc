@@ -1,10 +1,18 @@
-# WaveRNN + VQ-VAE
+<div align="center">
 
+# WaveRNN + VQ-VAE <!-- omit in toc -->
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)][notebook]
+
+</div>
+
+Reimplmentation of mkotha/WaveRNN's VQ-VAE WaveRNN  
+
+## Current status
 Currently analyze repository and try to reproduce the results.  
 Reproduction target: multi-speaker VQ-VAE ([VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651))  
 Training time: 945k steps (from original repo's issue)  
 
-## What to do
+### ToDo
 1. Dry run without error
 2. Meature training time 
 3. Reproduce results
@@ -16,9 +24,11 @@ Training time: 945k steps (from original repo's issue)
 ## Demo
 [Audio samples](https://mkotha.github.io/WaveRNN/).
 
-## Preparation
+## Usage
 
-### Requirements
+### Preparation
+
+#### Requirements
 
 * Python 3.6 or newer
 * PyTorch with CUDA enabled
@@ -27,19 +37,25 @@ Training time: 945k steps (from original repo's issue)
   doesn't work that well).
 
 
-### Create config.py
+#### Create config.py
 
 ```
 cp config.py.example config.py
 ```
 
-### Preparing VCTK
+#### Preparing VCTK
 
 1. Download and uncompress [the VCTK dataset](https://datashare.is.ed.ac.uk/handle/10283/2651).
 2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48/path/to/output/directory`
 3. In `config.py`, set `multi_speaker_data_path` to point to the output directory.
 
-## Usage
+### Train
+
+#### Quick training
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)][notebook]
+
+#### CLI
 
 ```
 $ python wavernn.py
@@ -54,6 +70,9 @@ Every 50k steps, the model is run to generate test audio outputs.
 The output goes under the `model_outputs` directory.  
 
 When the `-g` option is given, the script produces the output using the saved model, rather than training it.  
+
+## Training Speed <!-- omit in toc -->
+x.xx [iter/sec] @ NVIDIA T4 Google Colaboratory (AMP+/-)
 
 # Deviations from the papers
 
@@ -99,3 +118,5 @@ It also has U-net-like skip connections that connect layers with the same operat
 # Acknowledgement
 The code is based on [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).  
 mkotha/WaveRNN is based on [fatchord/WaveRNN](https://github.com/fatchord/WaveRNN).  
+
+[notebook]:https://colab.research.google.com/github/tarepan/vqvaevc/blob/main/vqvaevc.ipynb
