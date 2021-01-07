@@ -46,7 +46,7 @@ cp config.py.example config.py
 #### Preparing VCTK
 
 1. Download and uncompress [the VCTK dataset](https://datashare.is.ed.ac.uk/handle/10283/2651).
-2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48/path/to/output/directory`
+2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48/ path/to/output/directory`
 3. In `config.py`, set `multi_speaker_data_path` to point to the output directory.
 
 ### Train
