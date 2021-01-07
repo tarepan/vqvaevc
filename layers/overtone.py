@@ -7,7 +7,7 @@ import utils.nn
 import time
 
 class Conv2(nn.Module):
-    """ A convolution layer with the stride of 2.
+    """ 1D conv with (kernel, stride)=(4, 2).
 
         Input:
             x: (N, 2L+2, in_channels) numeric tensor
@@ -87,6 +87,8 @@ class RNN4Cell(nn.Module):
         return y, h1
 
 class Overtone(nn.Module):
+    """Decoder of VQ-VAE.
+    """
     def __init__(self, wrnn_dims, fc_dims, cond_channels, global_cond_channels):
         super().__init__()
         conv_channels = 128
@@ -114,6 +116,11 @@ class Overtone(nn.Module):
         self.cond_pad = cond_delay // 64
 
     def forward(self, x, cond, global_cond):
+        """Forward.
+
+        Args:
+            x: Quantized latent variable
+        """
         n = x.size(0)
         x_coarse = x[:, :, :1]
         c0 = self.conv0(x_coarse, global_cond)

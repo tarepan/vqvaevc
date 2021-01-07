@@ -48,11 +48,13 @@ class Model(nn.Module) :
         """
         1. `encoder`
         2. `vq`
-        3. decoder `overtone` 
+        3. decoder `overtone`
+
+        Args:
+            x (N, 768, 3) 
+            samples (N, 1022)
         """
-        # x: (N, 768, 3)
         #logger.log(f'x: {x.size()}')
-        # samples: (N, 1022)
         #logger.log(f'samples: {samples.size()}')
         continuous = self.encoder(samples)
         # continuous: (N, 14, 64)

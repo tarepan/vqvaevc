@@ -5,7 +5,7 @@ import math
 import utils.logger as logger
 
 class VectorQuant(nn.Module):
-    """
+    """vq part of VQ-VAE.
         Input: (N, samples, n_channels, vec_len) numeric tensor
         Output: (N, samples, n_channels, vec_len) numeric tensor
     """

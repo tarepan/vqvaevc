@@ -5,9 +5,9 @@ import math
 import utils.logger as logger
 
 class DownsamplingEncoder(nn.Module):
-    """
-        Input: (N, samples_i) numeric tensor
-        Output: (N, samples_o, channels) numeric tensor
+    """VQ-VAE encoder.
+
+    Todo: Check receptive field
     """
     def __init__(self, channels, layer_specs):
         super().__init__()
@@ -47,11 +47,23 @@ class DownsamplingEncoder(nn.Module):
         # the vq layer unhappy.
 
     def forward(self, samples):
+        """
+        Args:
+            samples: (N, samples_i) numeric tensor
+        Returns:
+            (N, samples_o, channels) numeric tensor
+        """
         x = samples.unsqueeze(1)
         #logger.log(f'sd[samples] {x.std()}')
+
         for i, stuff in enumerate(zip(self.convs_wide, self.convs_1x1, self.layer_specs, self.skips)):
+            # parts
             conv_wide, conv_1x1, layer_spec, skip = stuff
             stride, ksz, dilation_factor = layer_spec
+
+            # x: loop input/output
+            # x -> conv_wide -> tanh*sigmoid -> 1x1 Conv -> Res -> x
+            # |______________________________________________|
 
             x1 = conv_wide(x)
             #logger.log(f'sd[conv.s] {x1.std()}')
@@ -65,6 +77,9 @@ class DownsamplingEncoder(nn.Module):
             else:
                 x = x3 + x[:, :, skip:skip+x3.size(2)*stride].view(x.size(0), x3.size(1), x3.size(2), -1)[:, :, :, -1]
             #logger.log(f'sd[out] {x.std()}')
+
+        # 1x1 Conv -> ReLU -> 1x1 Conv
         x = self.final_conv_1(F.relu(self.final_conv_0(x)))
+
         #logger.log(f'sd[final] {x.std()}')
         return x.transpose(1, 2)
