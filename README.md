@@ -16,6 +16,7 @@ Training time: 945k steps (from original repo's issue)
 1. Dry run without error
 2. Meature training time 
 3. Reproduce results
+4. Refactor with PyTorch-Lightning
 
 ## System details
 - Task: speech reconstruction and speaker conversion  
@@ -68,15 +69,7 @@ x.xx [iter/sec] @ NVIDIA T4 Google Colaboratory (AMP+/-)
 
 # Deviations from the papers
 
-I deviated from the papers in some details, sometimes because I was lazy, and sometimes because I was unable to get good results without it.  
-Below is a (probably incomplete) list of deviations.
-
-All models:
-
-* The sampling rate is 22.05kHz.
-
-VQ-VAE:
-
+* Sampling rate: 16kHz (VQ-VAE paper) -> 22.05kHz
 * I normalize each latent embedding vector, so that it's on the unit 128-dimensional sphere.  
   Without this change, I was unable to get good utilization of the embedding vectors.
 * In the early stage of training, I scale with a small number the penalty term that apply to the input to the VQ layer.  
@@ -104,6 +97,7 @@ It also has U-net-like skip connections that connect layers with the same operat
 - VQ-VAE
   - ["Neural Discrete Representation Learning"](https://arxiv.org/abs/1711.00937)
   - [official demo](https://avdnoord.github.io/homepage/vqvae/)
+  - [Summary of audio part in paper](https://tarepan.hatenablog.com/entry/2020/12/06/000518)
 - WaveRNN
   - ["Efficient Neural Audio Synthesis"](https://arxiv.org/abs/1802.08435)
 
