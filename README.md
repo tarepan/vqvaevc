@@ -1,5 +1,9 @@
 # WaveRNN + VQ-VAE
 
+Origin: [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN)  
+
+Currently analyze repository and try to reproduce the results.  
+
 This is a Pytorch implementation of [WaveRNN](
 https://arxiv.org/abs/1802.08435v1). Currently 3 top-level networks are
 provided:
