@@ -8,6 +8,7 @@ from utils.dsp import *
 SEG_PATH = sys.argv[1]
 DATA_PATH = sys.argv[2]
 
+# List up files?
 def get_files(path):
     next_speaker_id = 0
     speaker_ids = {}
@@ -25,6 +26,12 @@ def get_files(path):
 files = get_files(SEG_PATH)
 
 def process_file(i, path):
+    """
+    1. trim based on volume
+    2. filter based on volume and length
+    3. save as f'{~~~}.npy'
+    """
+
     dir = f'{DATA_PATH}/{i}'
     name = path.split('/')[-1][:-4] # Drop .wav
     filename = f'{dir}/{name}.npy'
@@ -44,6 +51,7 @@ def process_file(i, path):
     np.save(filename, quant)
     return name
 
+# Parallel pre-processing
 index = []
 with mp.Pool(8) as pool:
     for i, speaker in enumerate(files):
@@ -51,6 +59,7 @@ with mp.Pool(8) as pool:
         index.append([x for x in res if x])
         print(f'Done processing speaker {i}')
 
+# Write data to disk.
 os.makedirs(DATA_PATH, exist_ok=True)
 with open(f'{DATA_PATH}/index.pkl', 'wb') as f:
     pickle.dump(index, f)
