@@ -47,20 +47,24 @@ model_type = args.model or 'vqvae'
 
 model_name = f'{model_type}.43.upconv'
 
+# Prepare model generator.
 if model_type == 'vqvae':
     model_fn = lambda dataset: vqvae.Model(rnn_dims=896, fc_dims=896, global_decoder_cond_dims=dataset.num_speakers(),
                   upsample_factors=(4, 4, 4), normalize_vq=True, noise_x=True, noise_y=True).cuda()
     dataset_type = 'multi'
 elif model_type == 'wavernn':
-    model_fn = lambda dataset: wr.Model(rnn_dims=896, fc_dims=896, pad=2,
-                  upsample_factors=(4, 4, 4), feat_dims=80).cuda()
-    dataset_type = 'single'
+    NotImplementedError("disabled mode")
+    # model_fn = lambda dataset: wr.Model(rnn_dims=896, fc_dims=896, pad=2,
+    #               upsample_factors=(4, 4, 4), feat_dims=80).cuda()
+    # dataset_type = 'single'
 elif model_type == 'nc':
-    model_fn = lambda dataset: nc.Model(rnn_dims=896, fc_dims=896).cuda()
-    dataset_type = 'single'
+    NotImplementedError("disabled mode")
+    # model_fn = lambda dataset: nc.Model(rnn_dims=896, fc_dims=896).cuda()
+    # dataset_type = 'single'
 else:
     sys.exit(f'Unknown model: {model_type}')
 
+# Prepare dataset.
 if dataset_type == 'multi':
     data_path = config.multi_speaker_data_path
     with open(f'{data_path}/index.pkl', 'rb') as f:
@@ -69,17 +73,19 @@ if dataset_type == 'multi':
     train_index = [x[:-1] if i < args.count else x for i, x in enumerate(index)]
     dataset = env.MultispeakerDataset(train_index, data_path)
 elif dataset_type == 'single':
-    data_path = config.single_speaker_data_path
-    with open(f'{data_path}/dataset_ids.pkl', 'rb') as f:
-        index = pickle.load(f)
-    test_index = index[-args.count:] + index[:args.count]
-    train_index = index[:-args.count]
-    dataset = env.AudiobookDataset(train_index, data_path)
+    NotImplementedError("disabled mode")
+    # data_path = config.single_speaker_data_path
+    # with open(f'{data_path}/dataset_ids.pkl', 'rb') as f:
+    #     index = pickle.load(f)
+    # test_index = index[-args.count:] + index[:args.count]
+    # train_index = index[:-args.count]
+    # dataset = env.AudiobookDataset(train_index, data_path)
 else:
     raise RuntimeError('bad dataset type')
 
 print(f'dataset size: {len(dataset)}')
 
+# Prepare the model.
 model = model_fn(dataset)
 
 if use_half:
@@ -111,6 +117,7 @@ else:
 
 optimiser = optim.Adam(model.parameters())
 
+# Execute training/evaluation
 if args.generate:
     model.do_generate(paths, step, data_path, test_index, use_half=use_half, verbose=True)#, deterministic=True)
 else:

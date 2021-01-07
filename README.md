@@ -3,6 +3,10 @@
 Origin: [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN)  
 
 Currently analyze repository and try to reproduce the results.  
+Reproduction target: multi-speaker VQ-VAE ([VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651))  
+Training time: 945k steps (from original repo's issue)  
+
+## .
 
 This is a Pytorch implementation of [WaveRNN](
 https://arxiv.org/abs/1802.08435v1). Currently 3 top-level networks are
@@ -11,22 +15,8 @@ provided:
 * A [VQ-VAE](https://avdnoord.github.io/homepage/vqvae/) implementation with a
   WaveRNN decoder. Trained on a multispeaker dataset of speech, it can
   demonstrate speech reconstruction and speaker conversion.
-* A vocoder implementation. Trained on a single-speaker dataset, it can turn a
-  mel spectrogram into raw waveform.
-* An unconditioned WaveRNN. Trained on a single-speaker dataset, it can generate
-  random speech.
 
 [Audio samples](https://mkotha.github.io/WaveRNN/).
-
-It has been tested with the following datasets.
-
-Multispeaker datasets:
-
-* [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
-
-Single-speaker datasets:
-
-* [LJ Speech](https://keithito.com/LJ-Speech-Dataset/)
 
 ## Preparation
 
@@ -47,8 +37,6 @@ cp config.py.example config.py
 
 ### Preparing VCTK
 
-You can skip this section if you don't need a multi-speaker dataset.
-
 1. Download and uncompress [the VCTK dataset](
   https://datashare.is.ed.ac.uk/handle/10283/2651).
 2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48
@@ -56,27 +44,11 @@ You can skip this section if you don't need a multi-speaker dataset.
 3. In `config.py`, set `multi_speaker_data_path` to point to the output
   directory.
 
-### Preparing LJ-Speech
-
-You can skip this section if you don't need a single-speaker dataset.
-
-1. Download and uncompress [the LJ speech dataset](
-  https://keithito.com/LJ-Speech-Dataset/).
-2. `python preprocess16.py /path/to/dataset/LJSpeech-1.1/wavs
-  /path/to/output/directory`
-3. In `config.py`, set `single_speaker_data_path` to point to the output
-  directory.
-
 ## Usage
-
-`wavernn.py` is the entry point:
 
 ```
 $ python wavernn.py
 ```
-
-By default, it trains a VQ-VAE model. The `-m` option can be used to tell the
-the script to train a different model.
 
 Trained models are saved under the `model_checkpoints` directory.
 
