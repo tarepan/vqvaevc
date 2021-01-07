@@ -19,7 +19,6 @@ import utils.logger as logger
 import time
 import subprocess
 
-import config
 
 parser = argparse.ArgumentParser(description='Train or run some neural net')
 parser.add_argument('--generate', '-g', action='store_true')
@@ -31,6 +30,8 @@ parser.add_argument('--model', '-m')
 parser.add_argument('--force', action='store_true', help='skip the version check')
 parser.add_argument('--count', '-c', type=int, default=3, help='size of the test set')
 parser.add_argument('--partial', action='append', default=[], help='model to partially load')
+parser.add_argument('--multi_speaker_data_path', type=str, help='path of preprocessed multi-speaker dataset')
+# parser.add_argument('--single_speaker_data_path', type=str, help='path of preprocessed single-speaker dataset')
 args = parser.parse_args()
 
 if args.float and args.half:
@@ -66,7 +67,7 @@ else:
 
 # Prepare dataset.
 if dataset_type == 'multi':
-    data_path = config.multi_speaker_data_path
+    data_path = args.multi_speaker_data_path
     with open(f'{data_path}/index.pkl', 'rb') as f:
         index = pickle.load(f)
     test_index = [x[-1:] if i < 2 * args.count else [] for i, x in enumerate(index)]
@@ -74,7 +75,7 @@ if dataset_type == 'multi':
     dataset = env.MultispeakerDataset(train_index, data_path)
 elif dataset_type == 'single':
     NotImplementedError("disabled mode")
-    # data_path = config.single_speaker_data_path
+    # data_path = args.single_speaker_data_path
     # with open(f'{data_path}/dataset_ids.pkl', 'rb') as f:
     #     index = pickle.load(f)
     # test_index = index[-args.count:] + index[:args.count]

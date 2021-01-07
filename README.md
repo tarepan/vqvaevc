@@ -36,18 +36,10 @@ Training time: 945k steps (from original repo's issue)
 * [apex](https://github.com/NVIDIA/apex) if you want to use FP16 (it probably
   doesn't work that well).
 
-
-#### Create config.py
-
-```
-cp config.py.example config.py
-```
-
 #### Preparing VCTK
 
 1. Download and uncompress [the VCTK dataset](https://datashare.is.ed.ac.uk/handle/10283/2651).
 2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48/ path/to/output/directory`
-3. In `config.py`, set `multi_speaker_data_path` to point to the output directory.
 
 ### Train
 
@@ -58,7 +50,7 @@ cp config.py.example config.py
 #### CLI
 
 ```
-$ python wavernn.py
+$ python wavernn.py --multi_speaker_data_path path/to/dir_preprocessed_data
 ```
 
 Trained models are saved under the `model_checkpoints` directory.
