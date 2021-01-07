@@ -1,21 +1,19 @@
 # WaveRNN + VQ-VAE
 
-Origin: [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN)  
-
 Currently analyze repository and try to reproduce the results.  
 Reproduction target: multi-speaker VQ-VAE ([VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651))  
 Training time: 945k steps (from original repo's issue)  
 
-## .
+## What to do
+1. Dry run without error
+2. Meature training time 
+3. Reproduce results
 
-This is a Pytorch implementation of [WaveRNN](
-https://arxiv.org/abs/1802.08435v1). Currently 3 top-level networks are
-provided:
+## System details
+- Task: speech reconstruction and speaker conversion  
+- Dataset: Multi-speaker (VCTK)
 
-* A [VQ-VAE](https://avdnoord.github.io/homepage/vqvae/) implementation with a
-  WaveRNN decoder. Trained on a multispeaker dataset of speech, it can
-  demonstrate speech reconstruction and speaker conversion.
-
+## Demo
 [Audio samples](https://mkotha.github.io/WaveRNN/).
 
 ## Preparation
@@ -37,12 +35,9 @@ cp config.py.example config.py
 
 ### Preparing VCTK
 
-1. Download and uncompress [the VCTK dataset](
-  https://datashare.is.ed.ac.uk/handle/10283/2651).
-2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48
-  /path/to/output/directory`
-3. In `config.py`, set `multi_speaker_data_path` to point to the output
-  directory.
+1. Download and uncompress [the VCTK dataset](https://datashare.is.ed.ac.uk/handle/10283/2651).
+2. `python preprocess_multispeaker.py /path/to/dataset/VCTK-Corpus/wav48/path/to/output/directory`
+3. In `config.py`, set `multi_speaker_data_path` to point to the output directory.
 
 ## Usage
 
@@ -52,20 +47,18 @@ $ python wavernn.py
 
 Trained models are saved under the `model_checkpoints` directory.
 
-By default, the script will take the latest snapshot and continues training
-from there. To train a new model freshly, use the `--scratch` option.
+By default, the script will take the latest snapshot and continues training from there.  
+To train a new model freshly, use the `--scratch` option.  
 
-Every 50k steps, the model is run to generate test audio outputs. The output
-goes under the `model_outputs` directory.
+Every 50k steps, the model is run to generate test audio outputs.  
+The output goes under the `model_outputs` directory.  
 
-When the `-g` option is given, the script produces the output using the saved
-model, rather than training it.
+When the `-g` option is given, the script produces the output using the saved model, rather than training it.  
 
 # Deviations from the papers
 
-I deviated from the papers in some details, sometimes because I was lazy, and
-sometimes because I was unable to get good results without it. Below is a
-(probably incomplete) list of deviations.
+I deviated from the papers in some details, sometimes because I was lazy, and sometimes because I was unable to get good results without it.  
+Below is a (probably incomplete) list of deviations.
 
 All models:
 
@@ -73,13 +66,10 @@ All models:
 
 VQ-VAE:
 
-* I normalize each latent embedding vector, so that it's on the unit 128-
-  dimensional sphere. Without this change, I was unable to get good utilization
-  of the embedding vectors.
-* In the early stage of training, I scale with a small number the penalty term
-  that apply to the input to the VQ layer. Without this, the input very often
-  collapses into a degenerate distribution which always selects the same
-  embedding vector.
+* I normalize each latent embedding vector, so that it's on the unit 128-dimensional sphere.  
+  Without this change, I was unable to get good utilization of the embedding vectors.
+* In the early stage of training, I scale with a small number the penalty term that apply to the input to the VQ layer.  
+  Without this, the input very often collapses into a degenerate distribution which always selects the same embedding vector.
 * During training, the target audio signal (which is also the input signal) is
   translated along the time axis by a random amount, uniformly chosen from
   [-128, 127] samples. Less importantly, some additive and multiplicative
@@ -92,16 +82,20 @@ VQ-VAE:
 
 # Context stacks
 
-The VQ-VAE implementation uses a WaveRNN-based decoder instead of a WaveNet-
-based decoder found in the paper. This is a WaveRNN network augmented
-with a context stack to extend the receptive field.  This network is
-defined in `layers/overtone.py`.
+The VQ-VAE implementation uses a WaveRNN-based decoder instead of a WaveNet-based decoder found in the paper.  
+This is a WaveRNN network augmented with a context stack to extend the receptive field.  
+This network is defined in `layers/overtone.py`.  
 
-The network has 6 convolutions with stride 2 to generate 64x downsampled
-'summary' of the waveform, and then 4 layers of upsampling RNNs, the last of
-which is the WaveRNN layer. It also has U-net-like skip connections that
-connect layers with the same operating frequency.
+The network has 6 convolutions with stride 2 to generate 64x downsampled 'summary' of the waveform, and then 4 layers of upsampling RNNs, the last of which is the WaveRNN layer.  
+It also has U-net-like skip connections that connect layers with the same operating frequency.  
+
+# References
+- VQ-VAE
+  - ["Neural Discrete Representation Learning"](https://arxiv.org/abs/1711.00937)
+  - [official demo](https://avdnoord.github.io/homepage/vqvae/)
+- WaveRNN
+  - ["Efficient Neural Audio Synthesis"](https://arxiv.org/abs/1802.08435)
 
 # Acknowledgement
-
-The code is based on [fatchord/WaveRNN](https://github.com/fatchord/WaveRNN).
+The code is based on [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).  
+mkotha/WaveRNN is based on [fatchord/WaveRNN](https://github.com/fatchord/WaveRNN).  
