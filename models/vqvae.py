@@ -17,6 +17,9 @@ import utils.logger as logger
 import random
 
 class Model(nn.Module) :
+    """
+    VQ-VAE full model.
+    """
     def __init__(self, rnn_dims, fc_dims, global_decoder_cond_dims, upsample_factors, normalize_vq=False,
             noise_x=False, noise_y=False):
         super().__init__()
@@ -42,6 +45,11 @@ class Model(nn.Module) :
         self.num_params()
 
     def forward(self, global_decoder_cond, x, samples):
+        """
+        1. `encoder`
+        2. `vq`
+        3. decoder `overtone` 
+        """
         # x: (N, 768, 3)
         #logger.log(f'x: {x.size()}')
         # samples: (N, 1022)
@@ -126,10 +134,14 @@ class Model(nn.Module) :
         return self.encoder.total_scale
 
     def do_train(self, paths, dataset, optimiser, epochs, batch_size, step, lr=1e-4, valid_index=[], use_half=False, do_clip=False):
+        """Main training loop
+        """
 
+        # Mixed Precision
         if use_half:
             import apex
             optimiser = apex.fp16_utils.FP16_Optimizer(optimiser, dynamic_loss_scale=True)
+
         for p in optimiser.param_groups : p['lr'] = lr
         criterion = nn.NLLLoss().cuda()
         k = 0
@@ -145,6 +157,7 @@ class Model(nn.Module) :
         window = 16 * self.total_scale()
         logger.log(f'pad_left={pad_left_encoder}|{pad_left_decoder}, pad_right={pad_right}, total_scale={self.total_scale()}')
 
+        # Epoch loop
         for e in range(epochs) :
 
             trn_loader = DataLoader(dataset, collate_fn=lambda batch: env.collate_multispeaker_samples(pad_left, window, pad_right, batch), batch_size=batch_size,
@@ -161,6 +174,7 @@ class Model(nn.Module) :
 
             iters = len(trn_loader)
 
+            # Step loop
             for i, (speaker, wave16) in enumerate(trn_loader) :
 
                 speaker = speaker.cuda()
@@ -202,13 +216,16 @@ class Model(nn.Module) :
                     translated = torch.stack(translated, dim=0)
                 else:
                     translated = noisy_f[:, pad_left-pad_left_encoder:]
+                # Forward
                 p_cf, vq_pen, encoder_pen, entropy = self(speaker, x, translated)
                 p_c, p_f = p_cf
+                # Loss
                 loss_c = criterion(p_c.transpose(1, 2).float(), y_coarse)
                 loss_f = criterion(p_f.transpose(1, 2).float(), y_fine)
                 encoder_weight = 0.01 * min(1, max(0.1, step / 1000 - 1))
                 loss = loss_c + loss_f + vq_pen + encoder_weight * encoder_pen
 
+                # Backward
                 optimiser.zero_grad()
                 if use_half:
                     optimiser.backward(loss)
@@ -216,6 +233,7 @@ class Model(nn.Module) :
                         raise RuntimeError("clipping in half precision is not implemented yet")
                 else:
                     loss.backward()
+                    # Gradient clipping / abort
                     if do_clip:
                         max_grad = 0
                         max_grad_name = ""
@@ -241,6 +259,7 @@ class Model(nn.Module) :
                         if 100000 < max_grad:
                             torch.save(self.state_dict(), "bad_model.pyt")
                             raise RuntimeError("Aborting due to crazy gradient (model saved to bad_model.pyt)")
+                # opt step
                 optimiser.step()
                 running_loss_c += loss_c.item()
                 running_loss_f += loss_f.item()
@@ -261,6 +280,7 @@ class Model(nn.Module) :
                 k = step // 1000
                 logger.status(f'Epoch: {e+1}/{epochs} -- Batch: {i+1}/{iters} -- Loss: c={avg_loss_c:#.4} f={avg_loss_f:#.4} vq={avg_loss_vq:#.4} vqc={avg_loss_vqc:#.4} -- Entropy: {avg_entropy:#.4} -- Grad: {running_max_grad:#.1} {running_max_grad_name} Speed: {speed:#.4} steps/sec -- Step: {k}k ')
 
+            # Checkpointing/Logging
             os.makedirs(paths.checkpoint_dir, exist_ok=True)
             torch.save(self.state_dict(), paths.model_path())
             np.save(paths.step_path(), step)
