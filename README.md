@@ -22,6 +22,11 @@ Training time: 945k steps (from original repo's issue)
 - Task: speech reconstruction and speaker conversion  
 - Dataset: Multi-speaker (VCTK)
 
+### Model
+Encoder: x64 (...no confidence) time compression with WaveNet-like 1D Conv  
+VQ: 128-dim vector quantization  
+Decoder: Context stacks + WaveRNN  
+
 ## Demo
 [Audio samples](https://mkotha.github.io/WaveRNN/).
 

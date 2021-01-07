@@ -23,6 +23,7 @@ class Conv2(nn.Module):
         if 0 < global_cond_channels:
             self.w_cond = nn.Linear(global_cond_channels, 2 * out_channels, bias=False)
         self.conv_wide = nn.Conv1d(in_channels, 2 * out_channels, ksz, stride=2)
+        # Initialize weights
         wsize = 2.967 / math.sqrt(ksz * in_channels)
         self.conv_wide.weight.data.uniform_(-wsize, wsize)
         self.conv_wide.bias.data.zero_()
@@ -118,10 +119,14 @@ class Overtone(nn.Module):
     def forward(self, x, cond, global_cond):
         """Forward.
 
+        x_coarse -> conv0 -> conv1 -> conv2 -> rnn0 -> rnn1 -> rnn2 -> wavernn
+
         Args:
             x: Quantized latent variable
         """
+        # now not used?
         n = x.size(0)
+        # 
         x_coarse = x[:, :, :1]
         c0 = self.conv0(x_coarse, global_cond)
         c1 = self.conv1(c0, global_cond)

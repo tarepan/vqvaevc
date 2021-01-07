@@ -19,23 +19,35 @@ class DownsamplingEncoder(nn.Module):
         total_scale = 1
         pad_left = 0
         self.skips = []
+
         for stride, ksz, dilation_factor in layer_specs:
+            # single loop = single layer
+
+            # --downsample--
             conv_wide = nn.Conv1d(prev_channels, 2 * channels, ksz, stride=stride, dilation=dilation_factor)
+            # Initialize weights
             wsize = 2.967 / math.sqrt(ksz * prev_channels)
             conv_wide.weight.data.uniform_(-wsize, wsize)
             conv_wide.bias.data.zero_()
+            # Register
             self.convs_wide.append(conv_wide)
 
+            # --1x1 Conv--
             conv_1x1 = nn.Conv1d(channels, channels, 1)
+            # Initialize weights
             conv_1x1.bias.data.zero_()
+            # Register
             self.convs_1x1.append(conv_1x1)
 
+            # --   --
             prev_channels = channels
             skip = (ksz - stride) * dilation_factor
             pad_left += total_scale * skip
             logger.log(f'pad += {total_scale} * {ksz-stride} * {dilation_factor}')
+            # Register
             self.skips.append(skip)
             total_scale *= stride
+
         self.pad_left = pad_left
         self.total_scale = total_scale
 
@@ -68,6 +80,7 @@ class DownsamplingEncoder(nn.Module):
             x1 = conv_wide(x)
             #logger.log(f'sd[conv.s] {x1.std()}')
             x1_a, x1_b = x1.split(x1.size(1) // 2, dim=1)
+            # Gated Convolutional Layers (c.f. PixelRNN)
             x2 = torch.tanh(x1_a) * torch.sigmoid(x1_b)
             #logger.log(f'sd[act] {x2.std()}')
             x3 = conv_1x1(x2)
@@ -82,4 +95,5 @@ class DownsamplingEncoder(nn.Module):
         x = self.final_conv_1(F.relu(self.final_conv_0(x)))
 
         #logger.log(f'sd[final] {x.std()}')
+        # (N, C, T) -> (N, T, C)
         return x.transpose(1, 2)
